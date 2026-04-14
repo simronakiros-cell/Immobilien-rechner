@@ -343,10 +343,38 @@
                     <span>{{ item.bundesland }}</span>
                     <span>{{ item.timestamp }}</span>
                 </div>
-                <div class="history-summary">
-                    <span>{{ "%.0f €"|format(item.preis) }} → Kauf: {{ "%.0f €"|format(item.gesamtkosten) }}</span>
+                <div style="font-size: 14px; color: #666;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Immobilienpreis:</span>
+                        <span>{{ "{:,.0f} €"|format(item.preis) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Eigenkapital:</span>
+                        <span>{{ "{:,.0f} €"|format(item.eigenkapital) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Darlehensbetrag:</span>
+                        <span>{{ "{:,.0f} €"|format(item.kreditbetrag) }}</span>
+                    </div>
                     {% if item.loan_info %}
-                    <span>Rate: {{ "%.0f €"|format(item.loan_info.monatliche_rate) }}/Mo.</span>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Monatliche Rate:</span>
+                        <span>{{ "{:,.0f} €"|format(item.loan_info.monatliche_rate) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Zins / Tilgung:</span>
+                        <span>{{ "%.2f"|format(item.loan_info.zinssatz) }}% / {{ "%.2f"|format(item.loan_info.tilgungssatz) }}%</span>
+                    </div>
+                    {% endif %}
+                    {% if item.rendite_info %}
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Mieteinnahmen:</span>
+                        <span>{{ "{:,.0f} €"|format(item.rendite_info.mieteinnahmen) }}/Mo.</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; color: #2563eb;">
+                        <span>Gesamtkosten:</span>
+                        <span>{{ "{:,.0f} €"|format(item.gesamtkosten) }}</span>
+                    </div>
                     {% endif %}
                 </div>
             </div>
