@@ -65,14 +65,19 @@ def index():
     result = None
     if request.method == "POST":
         try:
-            preis = float(request.form.get("preis", 0))
+            def parse_number(val):
+                if not val:
+                    return 0
+                return float(str(val).replace('.', '').replace(',', '.'))
+            
+            preis = parse_number(request.form.get("preis", 0))
             bundesland = request.form.get("bundesland", "")
-            makler_prozent = float(request.form.get("makler_prozent", 3.5))
-            eigenkapital = float(request.form.get("eigenkapital", 0))
-            zinssatz = float(request.form.get("zinssatz", 3.5))
-            laufzeit = int(request.form.get("laufzeit", 10))
-            tilgung = float(request.form.get("tilgung", 2.0))
-            restschuld = float(request.form.get("restschuld", 0))
+            makler_prozent = parse_number(request.form.get("makler_prozent", 3.5))
+            eigenkapital = parse_number(request.form.get("eigenkapital", 0))
+            zinssatz = parse_number(request.form.get("zinssatz", 3.5))
+            laufzeit = int(parse_number(request.form.get("laufzeit", 10)))
+            tilgung = parse_number(request.form.get("tilgung", 2.0))
+            restschuld = parse_number(request.form.get("restschuld", 0))
             
             if bundesland in GRUNDERWERBSTEUER and preis > 0:
                 notarkosten = preis * NOTARKOSTEN_SATZ
@@ -83,11 +88,10 @@ def index():
                 kreditbetrag = max(0, gesamtkosten - eigenkapital)
                 loan_info = calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgung, restschuld)
                 
-                mieteinnahmen = float(request.form.get("mieteinnahmen", 0))
-                nebenkosten = float(request.form.get("nebenkosten", 0))
-                verwaltung = float(request.form.get("verwaltung", 0))
-                ruecklage = float(request.form.get("ruecklage", 0))
-                mietniveau = float(request.form.get("mietniveau", 100))
+                mieteinnahmen = parse_number(request.form.get("mieteinnahmen", 0))
+                nebenkosten = parse_number(request.form.get("nebenkosten", 0))
+                verwaltung = parse_number(request.form.get("verwaltung", 0))
+                ruecklage = parse_number(request.form.get("ruecklage", 0))
                 
                 bruttorendite = (mieteinnahmen * 12 / preis * 100) if preis > 0 else 0
                 gesamt_nebenkosten = nebenkosten + verwaltung + ruecklage + (mieteinnahmen * 0.03)
@@ -106,8 +110,7 @@ def index():
                         "mieteinnahmen": mieteinnahmen,
                         "nebenkosten": nebenkosten,
                         "verwaltung": verwaltung,
-                        "ruecklage": ruecklage,
-                        "mietniveau": mietniveau
+                        "ruecklage": ruecklage
                     }
                 
                 result = {
@@ -148,4 +151,4 @@ def clear_history():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080, debug=False)
+    app.run(host='127.0.0.1', port=5001, debug=True)
