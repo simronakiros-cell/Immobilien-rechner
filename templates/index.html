@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Immobilien Rechner</title>
+    <script>
+        function normalizeNumber(input) {
+            input.value = input.value.replace(',', '.');
+        }
+    </script>
     <style>
         * {
             box-sizing: border-box;
@@ -163,7 +168,7 @@
             <h3>Immobilie & Kaufnebenkosten</h3>
             
             <label for="preis">Immobilienpreis (€)</label>
-            <input type="number" name="preis" id="preis" step="0.01" min="0" placeholder="z.B. 500000" required>
+            <input type="number" name="preis" id="preis" step="0.01" min="0" placeholder="z.B. 500000" required oninput="normalizeNumber(this)">
 
             <label for="bundesland">Bundesland</label>
             <select name="bundesland" id="bundesland" required>
@@ -176,11 +181,11 @@
             <div class="form-row">
                 <div>
                     <label for="makler">Maklerprovision (%)</label>
-                    <input type="number" name="makler_prozent" id="makler" step="0.1" min="0" max="10" value="3.5" required>
+                    <input type="number" name="makler_prozent" id="makler" step="0.1" min="0" max="10" value="3.5" required oninput="normalizeNumber(this)">
                 </div>
                 <div>
                     <label for="eigenkapital">Eigenkapital (€)</label>
-                    <input type="number" name="eigenkapital" id="eigenkapital" step="100" min="0" value="0">
+                    <input type="number" name="eigenkapital" id="eigenkapital" step="100" min="0" value="0" oninput="normalizeNumber(this)">
                 </div>
             </div>
 
@@ -189,7 +194,7 @@
             <div class="form-row">
                 <div>
                     <label for="zinssatz">Sollzins (%)</label>
-                    <input type="number" name="zinssatz" id="zinssatz" step="0.01" min="0" max="20" value="3.5">
+                    <input type="number" name="zinssatz" id="zinssatz" step="0.01" min="0" max="20" value="3.5" oninput="normalizeNumber(this)">
                 </div>
                 <div>
                     <label for="laufzeit">Zinsbindung (Jahre)</label>
@@ -200,11 +205,11 @@
             <div class="form-row">
                 <div>
                     <label for="tilgung">Tilgung (%)</label>
-                    <input type="number" name="tilgung" id="tilgung" step="0.1" min="0.5" max="10" value="2.0">
+                    <input type="number" name="tilgung" id="tilgung" step="0.1" min="0.5" max="10" value="2.0" oninput="normalizeNumber(this)">
                 </div>
                 <div>
                     <label for="restschuld">Restschuld (€)</label>
-                    <input type="number" name="restschuld" id="restschuld" step="1000" min="0" value="0">
+                    <input type="number" name="restschuld" id="restschuld" step="1000" min="0" value="0" oninput="normalizeNumber(this)">
                 </div>
             </div>
 
@@ -213,22 +218,22 @@
             <div class="form-row">
                 <div>
                     <label for="mieteinnahmen">Mietinnahmen / Monat (€)</label>
-                    <input type="number" name="mieteinnahmen" id="mieteinnahmen" step="10" min="0" value="0">
+                    <input type="number" name="mieteinnahmen" id="mieteinnahmen" step="10" min="0" value="0" oninput="normalizeNumber(this)">
                 </div>
                 <div>
                     <label for="nebenkosten">Nebenkosten / Monat (€)</label>
-                    <input type="number" name="nebenkosten" id="nebenkosten" step="10" min="0" value="0">
+                    <input type="number" name="nebenkosten" id="nebenkosten" step="10" min="0" value="0" oninput="normalizeNumber(this)">
                 </div>
             </div>
             
             <div class="form-row">
                 <div>
                     <label for="verwaltung">Verwaltung / Monat (€)</label>
-                    <input type="number" name="verwaltung" id="verwaltung" step="10" min="0" value="0">
+                    <input type="number" name="verwaltung" id="verwaltung" step="10" min="0" value="0" oninput="normalizeNumber(this)">
                 </div>
                 <div>
                     <label for="ruecklage">Rücklage / Monat (€)</label>
-                    <input type="number" name="ruecklage" id="ruecklage" step="10" min="0" value="0">
+                    <input type="number" name="ruecklage" id="ruecklage" step="10" min="0" value="0" oninput="normalizeNumber(this)">
                 </div>
             </div>
 
