@@ -343,38 +343,32 @@
                     <span>{{ item.bundesland }}</span>
                     <span>{{ item.timestamp }}</span>
                 </div>
-                <div style="font-size: 14px; color: #666;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Immobilienpreis:</span>
-                        <span>{{ "{:,.0f} €"|format(item.preis) }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Eigenkapital:</span>
-                        <span>{{ "{:,.0f} €"|format(item.eigenkapital) }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Darlehensbetrag:</span>
-                        <span>{{ "{:,.0f} €"|format(item.kreditbetrag) }}</span>
-                    </div>
+                <div style="font-size: 13px; color: #555;">
+                    <div style="border-bottom: 1px solid #eee; padding: 4px 0; font-weight: 500;">Kauf:</div>
+                    <div style="display: flex; justify-content: space-between;"><span>Preis:</span><span>{{ "{:,.0f} €"|format(item.preis) }}</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Makler:</span><span>{{ "%.1f"|format(item.makler_prozent) }}%</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Notarkosten:</span><span>{{ "{:,.0f} €"|format(item.notarkosten) }}</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Grunderwerbsteuer:</span><span>{{ "{:,.0f} €"|format(item.grunderwerbsteuer) }}</span></div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 500;"><span>Gesamtkosten:</span><span>{{ "{:,.0f} €"|format(item.gesamtkosten) }}</span></div>
+                    
+                    <div style="border-bottom: 1px solid #eee; padding: 4px 0; margin-top: 4px; font-weight: 500;">Finanzierung:</div>
+                    <div style="display: flex; justify-content: space-between;"><span>Eigenkapital:</span><span>{{ "{:,.0f} €"|format(item.eigenkapital) }}</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Darlehen:</span><span>{{ "{:,.0f} €"|format(item.kreditbetrag) }}</span></div>
                     {% if item.loan_info %}
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Monatliche Rate:</span>
-                        <span>{{ "{:,.0f} €"|format(item.loan_info.monatliche_rate) }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Zins / Tilgung:</span>
-                        <span>{{ "%.2f"|format(item.loan_info.zinssatz) }}% / {{ "%.2f"|format(item.loan_info.tilgungssatz) }}%</span>
-                    </div>
+                    <div style="display: flex; justify-content: space-between;"><span>Zins:</span><span>{{ "%.2f"|format(item.loan_info.zinssatz) }}%</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Tilgung:</span><span>{{ "%.2f"|format(item.loan_info.tilgungssatz) }}%</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Laufzeit:</span><span>{{ item.loan_info.laufzeit }} Jahre</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Restschuld:</span><span>{{ "{:,.0f} €"|format(item.loan_info.restschuld) }}</span></div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold;"><span>Rate/Monat:</span><span>{{ "{:,.0f} €"|format(item.loan_info.monatliche_rate) }}</span></div>
                     {% endif %}
+                    
                     {% if item.rendite_info %}
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Mieteinnahmen:</span>
-                        <span>{{ "{:,.0f} €"|format(item.rendite_info.mieteinnahmen) }}/Mo.</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-weight: bold; color: #2563eb;">
-                        <span>Gesamtkosten:</span>
-                        <span>{{ "{:,.0f} €"|format(item.gesamtkosten) }}</span>
-                    </div>
+                    <div style="border-bottom: 1px solid #eee; padding: 4px 0; margin-top: 4px; font-weight: 500;">Rendite:</div>
+                    <div style="display: flex; justify-content: space-between;"><span>Mieteinnahmen:</span><span>{{ "{:,.0f} €"|format(item.rendite_info.mieteinnahmen) }}/Mo.</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Nebenkosten:</span><span>{{ "{:,.0f} €"|format(item.rendite_info.nebenkosten) }}/Mo.</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Verwaltung:</span><span>{{ "{:,.0f} €"|format(item.rendite_info.verwaltung) }}/Mo.</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Rücklage:</span><span>{{ "{:,.0f} €"|format(item.rendite_info.ruecklage) }}/Mo.</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Rendite:</span><span>{{ "%.2f"|format(item.rendite_info.rendite) }}%</span></div>
                     {% endif %}
                 </div>
             </div>
