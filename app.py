@@ -82,6 +82,33 @@ def index():
                 kreditbetrag = max(0, gesamtkosten - eigenkapital)
                 loan_info = calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgung, restschuld)
                 
+                mieteinnahmen = float(request.form.get("mieteinnahmen", 0))
+                nebenkosten = float(request.form.get("nebenkosten", 0))
+                verwaltung = float(request.form.get("verwaltung", 0))
+                ruecklage = float(request.form.get("ruecklage", 0))
+                mietniveau = float(request.form.get("mietniveau", 100))
+                
+                bruttorendite = (mieteinnahmen * 12 / preis * 100) if preis > 0 else 0
+                gesamt_nebenkosten = nebenkosten + verwaltung + ruecklage + (mieteinnahmen * 0.03)
+                rendite_info = None
+                if preis > 0:
+                    nettomiete = (mieteinnahmen * 12) - (gesamt_nebenkosten * 12)
+                    rendite = (nettomiete / (eigenkapital if eigenkapital > 0 else preis)) * 100 if eigenkapital > 0 or preis > 0 else 0
+                    monatlicher_cashflow = mieteinnahmen - gesamt_nebenkosten - (loan_info["monatliche_rate"] if loan_info else 0)
+                    
+                    rendite_info = {
+                        "bruttorendite": bruttorendite,
+                        "nettomiete_jahr": nettomiete,
+                        "gesamtnachrang": gesamt_nebenkosten,
+                        "rendite": rendite,
+                        "monatlicher_cashflow": monatlicher_cashflow,
+                        "mieteinnahmen": mieteinnahmen,
+                        "nebenkosten": nebenkosten,
+                        "verwaltung": verwaltung,
+                        "ruecklage": ruecklage,
+                        "mietniveau": mietniveau
+                    }
+                
                 result = {
                     "preis": preis,
                     "bundesland": bundesland,
@@ -91,7 +118,7 @@ def index():
                     "makler_prozent": makler_prozent,
                     "maklerkosten": maklerkosten,
                     "gesamtkosten": gesamtkosten,
-                    "nebenkosten": notarkosten + grunderwerbsteuer + maklerkosten,
+                    "nebenkosten_kauf": notarkosten + grunderwerbsteuer + maklerkosten,
                     "eigenkapital": eigenkapital,
                     "zinssatz": zinssatz,
                     "laufzeit": laufzeit,
@@ -99,6 +126,7 @@ def index():
                     "restschuld": restschuld,
                     "kreditbetrag": kreditbetrag,
                     "loan_info": loan_info,
+                    "rendite_info": rendite_info,
                     "timestamp": datetime.now().strftime("%d.%m.%Y %H:%M")
                 }
                 session["history"].insert(0, result)

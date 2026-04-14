@@ -98,6 +98,30 @@
             margin: 5px 0;
             border-bottom: none;
         }
+        .result-row.positive {
+            background: #dcfce7;
+            padding: 12px 10px;
+            border-radius: 8px;
+            margin: 5px 0;
+            border-bottom: none;
+        }
+        .result-row.negative {
+            background: #fee2e2;
+            padding: 12px 10px;
+            border-radius: 8px;
+            margin: 5px 0;
+            border-bottom: none;
+        }
+        .rendite-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .rendite-good { background: #22c55e; color: white; }
+        .rendite-medium { background: #eab308; color: white; }
+        .rendite-bad { background: #ef4444; color: white; }
         .history-item {
             background: #f9fafb;
             padding: 15px;
@@ -184,6 +208,30 @@
                 </div>
             </div>
 
+            <h3>Rendite / Kapitalanlage</h3>
+            
+            <div class="form-row">
+                <div>
+                    <label for="mieteinnahmen">Mietinnahmen / Monat (€)</label>
+                    <input type="number" name="mieteinnahmen" id="mieteinnahmen" step="10" min="0" value="0">
+                </div>
+                <div>
+                    <label for="nebenkosten">Nebenkosten / Monat (€)</label>
+                    <input type="number" name="nebenkosten" id="nebenkosten" step="10" min="0" value="0">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div>
+                    <label for="verwaltung">Verwaltung / Monat (€)</label>
+                    <input type="number" name="verwaltung" id="verwaltung" step="10" min="0" value="0">
+                </div>
+                <div>
+                    <label for="ruecklage">Rücklage / Monat (€)</label>
+                    <input type="number" name="ruecklage" id="ruecklage" step="10" min="0" value="0">
+                </div>
+            </div>
+
             <button type="submit">Berechnen</button>
         </form>
 
@@ -208,7 +256,7 @@
             </div>
             <div class="result-row">
                 <span>Nebenkosten gesamt</span>
-                <span>{{ "%.2f €"|format(result.nebenkosten) }}</span>
+                <span>{{ "%.2f €"|format(result.nebenkosten_kauf) }}</span>
             </div>
             <div class="result-row total">
                 <span>Gesamtbelastung (Kauf)</span>
@@ -237,14 +285,33 @@
                 <span>Restschuld</span>
                 <span>{{ "%.2f €"|format(result.loan_info.restschuld) }}</span>
             </div>
+            {% endif %}
+
+            {% if result.rendite_info %}
+            <h3>Renditeübersicht</h3>
+            <div style="text-align: center; margin: 20px 0;">
+                <span class="rendite-badge {% if result.rendite_info.rendite >= 5 %}rendite-good{% elif result.rendite_info.rendite >= 3 %}rendite-medium{% else %}rendite-bad{% endif %}">
+                    {{ "%.2f %"|format(result.rendite_info.rendite) }} Eigenkapitalrendite
+                </span>
+            </div>
             <div class="result-row">
-                <span>Gesamtzinsen ({{ result.loan_info.laufzeit }} Jahre)</span>
-                <span>{{ "%.2f €"|format(result.loan_info.gesamt_zinsen) }}</span>
+                <span>Bruttorendite</span>
+                <span>{{ "%.2f %"|format(result.rendite_info.bruttorendite) }}</span>
             </div>
-            <div class="result-row total">
-                <span>Gesamtkosten Kredit</span>
-                <span>{{ "%.2f €"|format(result.loan_info.kosten_gesamt) }}</span>
+            <div class="result-row">
+                <span>Jährliche Nettomiete</span>
+                <span>{{ "%.2f €"|format(result.rendite_info.nettomiete_jahr) }}</span>
             </div>
+            <div class="result-row">
+                <span>Betriebskosten / Monat</span>
+                <span>{{ "%.2f €"|format(result.rendite_info.gesamtnachrang) }}</span>
+            </div>
+            {% if result.loan_info %}
+            <div class="result-row {% if result.rendite_info.monatlicher_cashflow >= 0 %}positive{% else %}negative{% endif %}">
+                <span>Monatlicher Cashflow</span>
+                <span>{{ "%.2f €"|format(result.rendite_info.monatlicher_cashflow) }}</span>
+            </div>
+            {% endif %}
             {% endif %}
         </div>
         {% endif %}
