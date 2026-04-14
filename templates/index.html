@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immobilien Rechner</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80') center/cover no-repeat fixed;
+            min-height: 100vh;
+        }
+        .card {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(5px);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #1e3a5f;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #1e3a5f;
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            padding: 14px 24px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .btn-secondary {
+            background: #6b7280;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .result-row.total {
+            font-weight: 700;
+            font-size: 18px;
+            color: #2563eb;
+            border-bottom: none;
+            margin-top: 10px;
+        }
+        .history-item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .history-summary {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+        }
+        .history-summary span:last-child {
+            font-weight: 600;
+            color: #2563eb;
+        }
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .clear-btn {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .no-history {
+            text-align: center;
+            color: #9ca3af;
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Immobilien Rechner</h1>
+        <form method="POST">
+            <label for="preis">Immobilienpreis (€)</label>
+            <input type="number" name="preis" id="preis" step="0.01" min="0" placeholder="z.B. 500000" required>
+
+            <label for="bundesland">Bundesland</label>
+            <select name="bundesland" id="bundesland" required>
+                <option value="">-- Bitte wählen --</option>
+                {% for bl in bundeslaender %}
+                <option value="{{ bl }}">{{ bl }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="makler">Maklerprovision (%)</label>
+            <input type="number" name="makler_prozent" id="makler" step="0.1" min="0" max="10" value="3.5" required>
+
+            <button type="submit">Berechnen</button>
+        </form>
+
+        {% if result %}
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <h2>Kostenübersicht</h2>
+            <div class="result-row">
+                <span>Immobilienpreis</span>
+                <span>{{ "%.2f €"|format(result.preis) }}</span>
+            </div>
+            <div class="result-row">
+                <span>Notarkosten (1,5%)</span>
+                <span>{{ "%.2f €"|format(result.notarkosten) }}</span>
+            </div>
+            <div class="result-row">
+                <span>Grunderwerbsteuer ({{ result.grunderwerbsteuer_pct }}%)</span>
+                <span>{{ "%.2f €"|format(result.grunderwerbsteuer) }}</span>
+            </div>
+            <div class="result-row">
+                <span>Maklerkosten ({{ result.makler_prozent }}%)</span>
+                <span>{{ "%.2f €"|format(result.maklerkosten) }}</span>
+            </div>
+            <div class="result-row">
+                <span>Nebenkosten gesamt</span>
+                <span>{{ "%.2f €"|format(result.nebenkosten) }}</span>
+            </div>
+            <div class="result-row total">
+                <span>Gesamtkosten</span>
+                <span>{{ "%.2f €"|format(result.gesamtkosten) }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="margin: 0;">Verlauf</h2>
+            {% if history %}
+            <form method="POST" action="/clear" style="margin: 0;">
+                <button type="submit" class="btn-secondary" style="padding: 8px 16px; font-size: 14px;">Löschen</button>
+            </form>
+            {% endif %}
+        </div>
+        
+        {% if history %}
+        <div class="history-list">
+            {% for item in history %}
+            <div class="history-item">
+                <div class="history-header">
+                    <span>{{ item.bundesland }}</span>
+                    <span>{{ item.timestamp }}</span>
+                </div>
+                <div class="history-summary">
+                    <span>{{ "%.0f €"|format(item.preis) }} → Gesamtkosten</span>
+                    <span>{{ "%.2f €"|format(item.gesamtkosten) }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-history">Noch keine Berechnungen durchgeführt</div>
+        {% endif %}
+    </div>
+</body>
+</html>
