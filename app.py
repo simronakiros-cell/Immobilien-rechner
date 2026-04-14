@@ -2,10 +2,11 @@ from flask import Flask, render_template, request, session, redirect, url_for
 from datetime import datetime
 import os
 import math
+import secrets
 
 template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=template_dir)
-app.secret_key = os.environ.get("SECRET_KEY", "immobilien-rechner-2024")
+app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
 GRUNDERWERBSTEUER = {
     "Baden-Württemberg": 5.0,

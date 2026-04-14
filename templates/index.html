@@ -275,11 +275,11 @@
             </div>
             <div class="result-row">
                 <span>Sollzins</span>
-                <span>{{ "%.2f %"|format(result.loan_info.zinssatz) }}</span>
+                <span>{{ "%.2f"|format(result.loan_info.zinssatz) }} %</span>
             </div>
             <div class="result-row">
                 <span>Tilgung</span>
-                <span>{{ "%.2f %"|format(result.loan_info.tilgungssatz) }}</span>
+                <span>{{ "%.2f"|format(result.loan_info.tilgungssatz) }} %</span>
             </div>
             <div class="result-row">
                 <span>Restschuld</span>
@@ -291,12 +291,12 @@
             <h3>Renditeübersicht</h3>
             <div style="text-align: center; margin: 20px 0;">
                 <span class="rendite-badge {% if result.rendite_info.rendite >= 5 %}rendite-good{% elif result.rendite_info.rendite >= 3 %}rendite-medium{% else %}rendite-bad{% endif %}">
-                    {{ "%.2f %"|format(result.rendite_info.rendite) }} Eigenkapitalrendite
+                    {{ "%.2f"|format(result.rendite_info.rendite) }} % Eigenkapitalrendite</span>
                 </span>
             </div>
             <div class="result-row">
                 <span>Bruttorendite</span>
-                <span>{{ "%.2f %"|format(result.rendite_info.bruttorendite) }}</span>
+                <span>{{ "%.2f"|format(result.rendite_info.bruttorendite) }} %</span>
             </div>
             <div class="result-row">
                 <span>Jährliche Nettomiete</span>
