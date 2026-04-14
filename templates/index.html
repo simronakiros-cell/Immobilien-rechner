@@ -33,11 +33,22 @@
             color: #1e3a5f;
             margin-bottom: 15px;
         }
+        h3 {
+            color: #1e3a5f;
+            margin: 20px 0 10px 0;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
             color: #555;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
         input, select {
             width: 100%;
@@ -48,6 +59,7 @@
             font-size: 16px;
         }
         button {
+            width: 100%;
             padding: 14px 24px;
             background: #2563eb;
             color: white;
@@ -79,6 +91,13 @@
             border-bottom: none;
             margin-top: 10px;
         }
+        .result-row.highlight {
+            background: #e0f2fe;
+            padding: 12px 10px;
+            border-radius: 8px;
+            margin: 5px 0;
+            border-bottom: none;
+        }
         .history-item {
             background: #f9fafb;
             padding: 15px;
@@ -106,11 +125,6 @@
             max-height: 400px;
             overflow-y: auto;
         }
-        .clear-btn {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-        }
         .no-history {
             text-align: center;
             color: #9ca3af;
@@ -122,6 +136,8 @@
     <div class="card">
         <h1>Immobilien Rechner</h1>
         <form method="POST">
+            <h3>Immobilie & Kaufnebenkosten</h3>
+            
             <label for="preis">Immobilienpreis (€)</label>
             <input type="number" name="preis" id="preis" step="0.01" min="0" placeholder="z.B. 500000" required>
 
@@ -133,8 +149,40 @@
                 {% endfor %}
             </select>
 
-            <label for="makler">Maklerprovision (%)</label>
-            <input type="number" name="makler_prozent" id="makler" step="0.1" min="0" max="10" value="3.5" required>
+            <div class="form-row">
+                <div>
+                    <label for="makler">Maklerprovision (%)</label>
+                    <input type="number" name="makler_prozent" id="makler" step="0.1" min="0" max="10" value="3.5" required>
+                </div>
+                <div>
+                    <label for="eigenkapital">Eigenkapital (€)</label>
+                    <input type="number" name="eigenkapital" id="eigenkapital" step="100" min="0" value="0">
+                </div>
+            </div>
+
+            <h3>Finanzierung</h3>
+            
+            <div class="form-row">
+                <div>
+                    <label for="zinssatz">Sollzins (%)</label>
+                    <input type="number" name="zinssatz" id="zinssatz" step="0.01" min="0" max="20" value="3.5">
+                </div>
+                <div>
+                    <label for="laufzeit">Zinsbindung (Jahre)</label>
+                    <input type="number" name="laufzeit" id="laufzeit" step="1" min="1" max="30" value="10">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div>
+                    <label for="tilgung">Tilgung (%)</label>
+                    <input type="number" name="tilgung" id="tilgung" step="0.1" min="0.5" max="10" value="2.0">
+                </div>
+                <div>
+                    <label for="restschuld">Restschuld (€)</label>
+                    <input type="number" name="restschuld" id="restschuld" step="1000" min="0" value="0">
+                </div>
+            </div>
 
             <button type="submit">Berechnen</button>
         </form>
@@ -163,9 +211,41 @@
                 <span>{{ "%.2f €"|format(result.nebenkosten) }}</span>
             </div>
             <div class="result-row total">
-                <span>Gesamtkosten</span>
+                <span>Gesamtbelastung (Kauf)</span>
                 <span>{{ "%.2f €"|format(result.gesamtkosten) }}</span>
             </div>
+
+            {% if result.loan_info %}
+            <h3>Finanzierungsübersicht</h3>
+            <div class="result-row">
+                <span>Darlehensbetrag</span>
+                <span>{{ "%.2f €"|format(result.loan_info.kreditbetrag) }}</span>
+            </div>
+            <div class="result-row highlight">
+                <span>Monatliche Rate</span>
+                <span>{{ "%.2f €"|format(result.loan_info.monatliche_rate) }}</span>
+            </div>
+            <div class="result-row">
+                <span>Sollzins</span>
+                <span>{{ "%.2f %"|format(result.loan_info.zinssatz) }}</span>
+            </div>
+            <div class="result-row">
+                <span>Tilgung</span>
+                <span>{{ "%.2f %"|format(result.loan_info.tilgungssatz) }}</span>
+            </div>
+            <div class="result-row">
+                <span>Restschuld</span>
+                <span>{{ "%.2f €"|format(result.loan_info.restschuld) }}</span>
+            </div>
+            <div class="result-row">
+                <span>Gesamtzinsen ({{ result.loan_info.laufzeit }} Jahre)</span>
+                <span>{{ "%.2f €"|format(result.loan_info.gesamt_zinsen) }}</span>
+            </div>
+            <div class="result-row total">
+                <span>Gesamtkosten Kredit</span>
+                <span>{{ "%.2f €"|format(result.loan_info.kosten_gesamt) }}</span>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
     </div>
@@ -189,8 +269,10 @@
                     <span>{{ item.timestamp }}</span>
                 </div>
                 <div class="history-summary">
-                    <span>{{ "%.0f €"|format(item.preis) }} → Gesamtkosten</span>
-                    <span>{{ "%.2f €"|format(item.gesamtkosten) }}</span>
+                    <span>{{ "%.0f €"|format(item.preis) }} → Kauf: {{ "%.0f €"|format(item.gesamtkosten) }}</span>
+                    {% if item.loan_info %}
+                    <span>Rate: {{ "%.0f €"|format(item.loan_info.monatliche_rate) }}/Mo.</span>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
