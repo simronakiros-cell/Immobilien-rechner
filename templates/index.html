@@ -253,50 +253,50 @@
             <h2>Kostenübersicht</h2>
             <div class="result-row">
                 <span>Immobilienpreis</span>
-                <span>{{ "%.2f €"|format(result.preis) }}</span>
+                <span>{{ result.preis|german_number(2) }} €</span>
             </div>
             <div class="result-row">
                 <span>Notarkosten (1,5%)</span>
-                <span>{{ "%.2f €"|format(result.notarkosten) }}</span>
+                <span>{{ result.notarkosten|german_number(2) }} €</span>
             </div>
             <div class="result-row">
                 <span>Grunderwerbsteuer ({{ result.grunderwerbsteuer_pct }}%)</span>
-                <span>{{ "%.2f €"|format(result.grunderwerbsteuer) }}</span>
+                <span>{{ result.grunderwerbsteuer|german_number(2) }} €</span>
             </div>
             <div class="result-row">
                 <span>Maklerkosten ({{ result.makler_prozent }}%)</span>
-                <span>{{ "%.2f €"|format(result.maklerkosten) }}</span>
+                <span>{{ result.maklerkosten|german_number(2) }} €</span>
             </div>
             <div class="result-row">
                 <span>Nebenkosten gesamt</span>
-                <span>{{ "%.2f €"|format(result.nebenkosten_kauf) }}</span>
+                <span>{{ result.nebenkosten_kauf|german_number(2) }} €</span>
             </div>
             <div class="result-row total">
                 <span>Gesamtbelastung (Kauf)</span>
-                <span>{{ "%.2f €"|format(result.gesamtkosten) }}</span>
+                <span>{{ result.gesamtkosten|german_number(2) }} €</span>
             </div>
 
             {% if result.loan_info %}
             <h3>Finanzierungsübersicht</h3>
             <div class="result-row">
                 <span>Darlehensbetrag</span>
-                <span>{{ "%.2f €"|format(result.loan_info.kreditbetrag) }}</span>
+                <span>{{ result.loan_info.kreditbetrag|german_number(2) }} €</span>
             </div>
             <div class="result-row highlight">
                 <span>Monatliche Rate</span>
-                <span>{{ "%.2f €"|format(result.loan_info.monatliche_rate) }}</span>
+                <span>{{ result.loan_info.monatliche_rate|german_number(2) }} €</span>
             </div>
             <div class="result-row">
                 <span>Sollzins</span>
-                <span>{{ "%.2f"|format(result.loan_info.zinssatz) }} %</span>
+                <span>{{ result.loan_info.zinssatz|german_number(2) }} %</span>
             </div>
             <div class="result-row">
                 <span>Tilgung</span>
-                <span>{{ "%.2f"|format(result.loan_info.tilgungssatz) }} %</span>
+                <span>{{ result.loan_info.tilgungssatz|german_number(2) }} %</span>
             </div>
             <div class="result-row">
                 <span>Restschuld</span>
-                <span>{{ "%.2f €"|format(result.loan_info.restschuld) }}</span>
+                <span>{{ result.loan_info.restschuld|german_number(2) }} €</span>
             </div>
             {% endif %}
 
@@ -304,24 +304,24 @@
             <h3>Renditeübersicht</h3>
             <div style="text-align: center; margin: 20px 0;">
                 <span class="rendite-badge {% if result.rendite_info.rendite >= 5 %}rendite-good{% elif result.rendite_info.rendite >= 3 %}rendite-medium{% else %}rendite-bad{% endif %}">
-                    {{ "%.2f"|format(result.rendite_info.rendite) }} % Eigenkapitalrendite</span>
+                    {{ result.rendite_info.rendite|german_number(2) }} % Eigenkapitalrendite</span>
             </div>
             <div class="result-row">
                 <span>Bruttorendite</span>
-                <span>{{ "%.2f"|format(result.rendite_info.bruttorendite) }} %</span>
+                <span>{{ result.rendite_info.bruttorendite|german_number(2) }} %</span>
             </div>
             <div class="result-row">
                 <span>Jährliche Nettomiete</span>
-                <span>{{ "%.2f €"|format(result.rendite_info.nettomiete_jahr) }}</span>
+                <span>{{ result.rendite_info.nettomiete_jahr|german_number(2) }} €</span>
             </div>
             <div class="result-row">
                 <span>Betriebskosten / Monat</span>
-                <span>{{ "%.2f €"|format(result.rendite_info.gesamtnachrang) }}</span>
+                <span>{{ result.rendite_info.gesamtnachrang|german_number(2) }} €</span>
             </div>
             {% if result.loan_info %}
             <div class="result-row {% if result.rendite_info.monatlicher_cashflow >= 0 %}positive{% else %}negative{% endif %}">
                 <span>Monatlicher Cashflow</span>
-                <span>{{ "%.2f €"|format(result.rendite_info.monatlicher_cashflow) }}</span>
+                <span>{{ result.rendite_info.monatlicher_cashflow|german_number(2) }} €</span>
             </div>
             {% endif %}
             {% endif %}
