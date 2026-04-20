@@ -8,6 +8,12 @@ template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templat
 app = Flask(__name__, template_folder=template_dir)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
+@app.template_filter('german_number')
+def german_number(value, decimals=0):
+    if value is None:
+        return "0"
+    return f"{float(value):,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
 GRUNDERWERBSTEUER = {
     "Baden-Württemberg": 5.0,
     "Bayern": 3.5,
