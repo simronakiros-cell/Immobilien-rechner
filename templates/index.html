@@ -260,6 +260,10 @@
                 <span>{{ result.notarkosten|german_number(2) }} €</span>
             </div>
             <div class="result-row">
+                <span>Grundbuchkosten (1%)</span>
+                <span>{{ result.grundbuchkosten|german_number(2) }} €</span>
+            </div>
+            <div class="result-row">
                 <span>Grunderwerbsteuer ({{ result.grunderwerbsteuer_pct }}%)</span>
                 <span>{{ result.grunderwerbsteuer|german_number(2) }} €</span>
             </div>
@@ -361,6 +365,7 @@
                     <div style="display: flex; justify-content: space-between;"><span>Preis:</span><span>{{ item.preis|german_number(0) }} €</span></div>
                     <div style="display: flex; justify-content: space-between;"><span>Makler:</span><span>{{ item.makler_prozent|german_number(1) }}%</span></div>
                     <div style="display: flex; justify-content: space-between;"><span>Notarkosten:</span><span>{{ item.notarkosten|german_number(0) }} €</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Grundbuchkosten:</span><span>{{ item.grundbuchkosten|german_number(0) }} €</span></div>
                     <div style="display: flex; justify-content: space-between;"><span>Grunderwerbsteuer:</span><span>{{ item.grunderwerbsteuer|german_number(0) }} €</span></div>
                     <div style="display: flex; justify-content: space-between; font-weight: 500;"><span>Gesamtkosten:</span><span>{{ item.gesamtkosten|german_number(0) }} €</span></div>
                     

@@ -33,6 +33,7 @@ GRUNDERWERBSTEUER = {
     "Thüringen": 6.5
 }
 NOTARKOSTEN_SATZ = 0.015
+GRUNDBUCHKOSTEN_SATZ = 0.01
 
 
 def calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgungssatz, restschuld):
@@ -87,9 +88,10 @@ def index():
             
             if bundesland in GRUNDERWERBSTEUER and preis > 0:
                 notarkosten = preis * NOTARKOSTEN_SATZ
+                grundbuchkosten = preis * GRUNDBUCHKOSTEN_SATZ
                 grunderwerbsteuer = preis * (GRUNDERWERBSTEUER[bundesland] / 100)
                 maklerkosten = preis * (makler_prozent / 100)
-                gesamtkosten = preis + notarkosten + grunderwerbsteuer + maklerkosten
+                gesamtkosten = preis + notarkosten + grundbuchkosten + grunderwerbsteuer + maklerkosten
                 
                 kreditbetrag = max(0, gesamtkosten - eigenkapital)
                 loan_info = calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgung, restschuld)
@@ -123,12 +125,13 @@ def index():
                     "preis": preis,
                     "bundesland": bundesland,
                     "notarkosten": notarkosten,
+                    "grundbuchkosten": grundbuchkosten,
                     "grunderwerbsteuer_pct": GRUNDERWERBSTEUER[bundesland],
                     "grunderwerbsteuer": grunderwerbsteuer,
                     "makler_prozent": makler_prozent,
                     "maklerkosten": maklerkosten,
                     "gesamtkosten": gesamtkosten,
-                    "nebenkosten_kauf": notarkosten + grunderwerbsteuer + maklerkosten,
+                    "nebenkosten_kauf": notarkosten + grundbuchkosten + grunderwerbsteuer + maklerkosten,
                     "eigenkapital": eigenkapital,
                     "zinssatz": zinssatz,
                     "laufzeit": laufzeit,
