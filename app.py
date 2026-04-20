@@ -89,9 +89,10 @@ def index():
             if bundesland in GRUNDERWERBSTEUER and preis > 0:
                 notarkosten = preis * NOTARKOSTEN_SATZ
                 grundbuchkosten = preis * GRUNDBUCHKOSTEN_SATZ
+                notarkosten_gesamt = notarkosten + grundbuchkosten
                 grunderwerbsteuer = preis * (GRUNDERWERBSTEUER[bundesland] / 100)
                 maklerkosten = preis * (makler_prozent / 100)
-                gesamtkosten = preis + notarkosten + grundbuchkosten + grunderwerbsteuer + maklerkosten
+                gesamtkosten = preis + notarkosten_gesamt + grunderwerbsteuer + maklerkosten
                 
                 kreditbetrag = max(0, gesamtkosten - eigenkapital)
                 loan_info = calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgung, restschuld)
@@ -126,12 +127,13 @@ def index():
                     "bundesland": bundesland,
                     "notarkosten": notarkosten,
                     "grundbuchkosten": grundbuchkosten,
+                    "notarkosten_gesamt": notarkosten_gesamt,
                     "grunderwerbsteuer_pct": GRUNDERWERBSTEUER[bundesland],
                     "grunderwerbsteuer": grunderwerbsteuer,
                     "makler_prozent": makler_prozent,
                     "maklerkosten": maklerkosten,
                     "gesamtkosten": gesamtkosten,
-                    "nebenkosten_kauf": notarkosten + grundbuchkosten + grunderwerbsteuer + maklerkosten,
+                    "nebenkosten_kauf": notarkosten_gesamt + grunderwerbsteuer + maklerkosten,
                     "eigenkapital": eigenkapital,
                     "zinssatz": zinssatz,
                     "laufzeit": laufzeit,
