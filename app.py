@@ -32,8 +32,7 @@ GRUNDERWERBSTEUER = {
     "Schleswig-Holstein": 6.5,
     "Thüringen": 6.5
 }
-NOTARKOSTEN_SATZ = 0.015
-GRUNDBUCHKOSTEN_SATZ = 0.01
+NOTAR_GRUNDBUCH_SATZ = 0.02
 
 
 def calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgungssatz, restschuld):
@@ -87,9 +86,7 @@ def index():
             restschuld = parse_number(request.form.get("restschuld", 0))
             
             if bundesland in GRUNDERWERBSTEUER and preis > 0:
-                notarkosten = preis * NOTARKOSTEN_SATZ
-                grundbuchkosten = preis * GRUNDBUCHKOSTEN_SATZ
-                notarkosten_gesamt = notarkosten + grundbuchkosten
+                notarkosten_gesamt = preis * NOTAR_GRUNDBUCH_SATZ
                 grunderwerbsteuer = preis * (GRUNDERWERBSTEUER[bundesland] / 100)
                 maklerkosten = preis * (makler_prozent / 100)
                 gesamtkosten = preis + notarkosten_gesamt + grunderwerbsteuer + maklerkosten
@@ -125,8 +122,6 @@ def index():
                 result = {
                     "preis": preis,
                     "bundesland": bundesland,
-                    "notarkosten": notarkosten,
-                    "grundbuchkosten": grundbuchkosten,
                     "notarkosten_gesamt": notarkosten_gesamt,
                     "grunderwerbsteuer_pct": GRUNDERWERBSTEUER[bundesland],
                     "grunderwerbsteuer": grunderwerbsteuer,
