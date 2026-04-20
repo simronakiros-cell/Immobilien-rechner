@@ -12,6 +12,10 @@
                 input.value = num.toLocaleString('de-DE', { minimumFractionDigits: val.includes('.') ? 2 : 0, maximumFractionDigits: 2 });
             }
         }
+        function toggleDetails(id) {
+            const el = document.getElementById(id);
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
     </script>
     <style>
         * {
@@ -338,12 +342,21 @@
         {% if history %}
         <div class="history-list">
             {% for item in history %}
-            <div class="history-item">
+            <div class="history-item" onclick="toggleDetails('details-{{ loop.index }}')" style="cursor: pointer;">
                 <div class="history-header">
-                    <span>{{ item.bundesland }}</span>
-                    <span>{{ item.timestamp }}</span>
+                    <span>{{ item.bundesland }} - {{ item.timestamp }}</span>
+                    <span style="font-weight: bold;">{{ item.gesamtkosten|german_number(0) }} €</span>
                 </div>
-                <div style="font-size: 13px; color: #555;">
+                <div style="font-size: 13px; color: #888;">
+                    <span>Preis: {{ item.preis|german_number(0) }} €</span>
+                    {% if item.loan_info %}
+                    <span style="margin-left: 10px;">Rate: {{ item.loan_info.monatliche_rate|german_number(0) }} €/Mo.</span>
+                    {% endif %}
+                    {% if item.rendite_info %}
+                    <span style="margin-left: 10px;">Rendite: {{ item.rendite_info.rendite|german_number(2) }}%</span>
+                    {% endif %}
+                </div>
+                <div id="details-{{ loop.index }}" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
                     <div style="border-bottom: 1px solid #eee; padding: 4px 0; font-weight: 500;">Kauf:</div>
                     <div style="display: flex; justify-content: space-between;"><span>Preis:</span><span>{{ item.preis|german_number(0) }} €</span></div>
                     <div style="display: flex; justify-content: space-between;"><span>Makler:</span><span>{{ item.makler_prozent|german_number(1) }}%</span></div>
