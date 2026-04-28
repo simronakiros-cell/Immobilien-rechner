@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify
 from datetime import datetime
 import os
 import math
 import secrets
+import random
 
 template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=template_dir)
@@ -74,7 +75,8 @@ def index():
             def parse_number(val):
                 if not val:
                     return 0
-                return float(str(val).replace('.', '').replace(',', '.'))
+                val = str(val).replace(',', '.')
+                return float(val)
             
             preis = parse_number(request.form.get("preis", 0))
             bundesland = request.form.get("bundesland", "")
@@ -156,5 +158,58 @@ def clear_history():
     return redirect(url_for("index"))
 
 
+@app.route("/flights", methods=["GET", "POST"])
+def flights():
+    if "flights" not in session:
+        session["flights"] = []
+
+    result = None
+    if request.method == "POST":
+        origin = request.form.get("origin", "").strip()
+        destination = request.form.get("destination", "").strip()
+        target_price = request.form.get("target_price", "300").strip()
+
+        try:
+            target_price = int(target_price) if target_price else 300
+        except ValueError:
+            target_price = 300
+
+        if origin and destination:
+            current_price = random.randint(150, 800)
+            result = {
+                "origin": origin,
+                "destination": destination,
+                "target_price": target_price,
+                "current_price": current_price,
+                "found": current_price <= target_price,
+                "timestamp": datetime.now().strftime("%d.%m.%Y %H:%M")
+            }
+            session["flights"].insert(0, result)
+            if len(session["flights"]) > 20:
+                session["flights"] = session["flights"][:20]
+            session.modified = True
+
+    flights_history = session.get("flights", [])
+    return render_template("flights.html", result=result, flights=flights_history)
+
+
+@app.route("/api/check-flight", methods=["POST"])
+def api_check_flight():
+    data = request.get_json()
+    origin = data.get("origin", "")
+    destination = data.get("destination", "")
+    target_price = data.get("target_price", 300)
+
+    current_price = random.randint(150, 800)
+    return jsonify({
+        "origin": origin,
+        "destination": destination,
+        "current_price": current_price,
+        "target_price": target_price,
+        "found": current_price <= target_price,
+        "timestamp": datetime.now().isoformat()
+    })
+
+
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

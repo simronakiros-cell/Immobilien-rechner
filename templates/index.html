@@ -12,9 +12,32 @@
                 input.value = num.toLocaleString('de-DE', { minimumFractionDigits: val.includes('.') ? 2 : 0, maximumFractionDigits: 2 });
             }
         }
-        function toggleDetails(id) {
+        function toggleDetails(id, event) {
+            event.stopPropagation();
             const el = document.getElementById(id);
             el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+        function loadFromHistory(item) {
+            document.getElementById('preis').value = item.preis || 0;
+            document.getElementById('bundesland').value = item.bundesland || '';
+            document.getElementById('makler').value = item.makler_prozent || 0;
+            document.getElementById('eigenkapital').value = item.eigenkapital || 0;
+            document.getElementById('zinssatz').value = item.zinssatz || 0;
+            document.getElementById('laufzeit').value = item.laufzeit || 10;
+            document.getElementById('tilgung').value = item.tilgung || 0;
+            document.getElementById('restschuld').value = item.restschuld || 0;
+            if (item.rendite_info) {
+                document.getElementById('mieteinnahmen').value = item.rendite_info.mieteinnahmen || 0;
+                document.getElementById('nebenkosten').value = item.rendite_info.nebenkosten || 0;
+                document.getElementById('verwaltung').value = item.rendite_info.verwaltung || 0;
+                document.getElementById('ruecklage').value = item.rendite_info.ruecklage || 0;
+            } else {
+                document.getElementById('mieteinnahmen').value = 0;
+                document.getElementById('nebenkosten').value = 0;
+                document.getElementById('verwaltung').value = 0;
+                document.getElementById('ruecklage').value = 0;
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
     <style>
@@ -172,28 +195,28 @@
 <body>
     <div class="card">
         <h1>Immobilien Rechner</h1>
-        <form method="POST">
+        <form method="POST" id="rechner-form">
             <h3>Immobilie & Kaufnebenkosten</h3>
             
             <label for="preis">Immobilienpreis (€)</label>
-            <input type="text" name="preis" id="preis" placeholder="z.B. 500.000" required onblur="formatOnBlur(this)">
+            <input type="text" name="preis" id="preis" placeholder="z.B. 500.000" value="{{ result.preis if result else '' }}" required onblur="formatOnBlur(this)">
 
             <label for="bundesland">Bundesland</label>
             <select name="bundesland" id="bundesland" required>
                 <option value="">-- Bitte wählen --</option>
                 {% for bl in bundeslaender %}
-                <option value="{{ bl }}">{{ bl }}</option>
+                <option value="{{ bl }}" {% if result and result.bundesland == bl %}selected{% endif %}>{{ bl }}</option>
                 {% endfor %}
             </select>
 
             <div class="form-row">
                 <div>
                     <label for="makler">Maklerprovision (%)</label>
-                    <input type="text" name="makler_prozent" id="makler" value="3,5" onblur="formatOnBlur(this)">
+                    <input type="text" name="makler_prozent" id="makler" value="{{ result.makler_prozent if result else '3,5' }}" onblur="formatOnBlur(this)">
                 </div>
                 <div>
                     <label for="eigenkapital">Eigenkapital (€)</label>
-                    <input type="text" name="eigenkapital" id="eigenkapital" value="0" onblur="formatOnBlur(this)">
+                    <input type="text" name="eigenkapital" id="eigenkapital" value="{{ result.eigenkapital if result else '0' }}" onblur="formatOnBlur(this)">
                 </div>
             </div>
 
@@ -202,22 +225,22 @@
             <div class="form-row">
                 <div>
                     <label for="zinssatz">Sollzins (%)</label>
-                    <input type="text" name="zinssatz" id="zinssatz" value="3,5" onblur="formatOnBlur(this)">
+                    <input type="text" name="zinssatz" id="zinssatz" value="{{ result.zinssatz if result else '3,5' }}" onblur="formatOnBlur(this)">
                 </div>
                 <div>
                     <label for="laufzeit">Zinsbindung (Jahre)</label>
-                    <input type="number" name="laufzeit" id="laufzeit" value="10" min="1" max="30">
+                    <input type="number" name="laufzeit" id="laufzeit" value="{{ result.laufzeit if result else '10' }}" min="1" max="30">
                 </div>
             </div>
             
             <div class="form-row">
                 <div>
                     <label for="tilgung">Tilgung (%)</label>
-                    <input type="text" name="tilgung" id="tilgung" value="2,0" onblur="formatOnBlur(this)">
+                    <input type="text" name="tilgung" id="tilgung" value="{{ result.tilgung if result else '2,0' }}" onblur="formatOnBlur(this)">
                 </div>
                 <div>
                     <label for="restschuld">Restschuld (€)</label>
-                    <input type="text" name="restschuld" id="restschuld" value="0" onblur="formatOnBlur(this)">
+                    <input type="text" name="restschuld" id="restschuld" value="{{ result.restschuld if result else '0' }}" onblur="formatOnBlur(this)">
                 </div>
             </div>
 
@@ -226,22 +249,22 @@
             <div class="form-row">
                 <div>
                     <label for="mieteinnahmen">Mietinnahmen / Monat (€)</label>
-                    <input type="text" name="mieteinnahmen" id="mieteinnahmen" value="0" onblur="formatOnBlur(this)">
+                    <input type="text" name="mieteinnahmen" id="mieteinnahmen" value="{{ result.rendite_info.mieteinnahmen if result and result.rendite_info else '0' }}" onblur="formatOnBlur(this)">
                 </div>
                 <div>
                     <label for="nebenkosten">Nebenkosten / Monat (€)</label>
-                    <input type="text" name="nebenkosten" id="nebenkosten" value="0" onblur="formatOnBlur(this)">
+                    <input type="text" name="nebenkosten" id="nebenkosten" value="{{ result.rendite_info.nebenkosten if result and result.rendite_info else '0' }}" onblur="formatOnBlur(this)">
                 </div>
             </div>
             
             <div class="form-row">
                 <div>
                     <label for="verwaltung">Verwaltung / Monat (€)</label>
-                    <input type="text" name="verwaltung" id="verwaltung" value="0" onblur="formatOnBlur(this)">
+                    <input type="text" name="verwaltung" id="verwaltung" value="{{ result.rendite_info.verwaltung if result and result.rendite_info else '0' }}" onblur="formatOnBlur(this)">
                 </div>
                 <div>
                     <label for="ruecklage">Rücklage / Monat (€)</label>
-                    <input type="text" name="ruecklage" id="ruecklage" value="0" onblur="formatOnBlur(this)">
+                    <input type="text" name="ruecklage" id="ruecklage" value="{{ result.rendite_info.ruecklage if result and result.rendite_info else '0' }}" onblur="formatOnBlur(this)">
                 </div>
             </div>
 
@@ -342,10 +365,10 @@
         {% if history %}
         <div class="history-list">
             {% for item in history %}
-            <div class="history-item" onclick="toggleDetails('details-{{ loop.index }}')" style="cursor: pointer;">
-                <div class="history-header">
-                    <span>{{ item.bundesland }} - {{ item.timestamp }}</span>
-                    <span style="font-weight: bold;">{{ item.gesamtkosten|german_number(0) }} €</span>
+            <div class="history-item">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="color: #6b7280; font-size: 14px;">{{ item.bundesland }} - {{ item.timestamp }}</span>
+                    <span style="font-weight: bold; color: #2563eb; font-size: 16px;">{{ item.gesamtkosten|german_number(0) }} €</span>
                 </div>
                 <div style="font-size: 13px; color: #888;">
                     <span>Preis: {{ item.preis|german_number(0) }} €</span>
@@ -355,6 +378,26 @@
                     {% if item.rendite_info %}
                     <span style="margin-left: 10px;">Rendite: {{ item.rendite_info.rendite|german_number(2) }}%</span>
                     {% endif %}
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 10px;">
+                    <form method="POST" style="margin:0; flex:1;">
+                        <input type="hidden" name="preis" value="{{ item.preis|int }}">
+                        <input type="hidden" name="bundesland" value="{{ item.bundesland }}">
+                        <input type="hidden" name="makler_prozent" value="{{ "%.1f"|format(item.makler_prozent) }}">
+                        <input type="hidden" name="eigenkapital" value="{{ item.eigenkapital|int }}">
+                        <input type="hidden" name="zinssatz" value="{{ "%.2f"|format(item.zinssatz) }}">
+                        <input type="hidden" name="laufzeit" value="{{ item.laufzeit }}">
+                        <input type="hidden" name="tilgung" value="{{ "%.2f"|format(item.tilgung) }}">
+                        <input type="hidden" name="restschuld" value="{{ item.restschuld|int }}">
+                        {% if item.rendite_info %}
+                        <input type="hidden" name="mieteinnahmen" value="{{ item.rendite_info.mieteinnahmen|int }}">
+                        <input type="hidden" name="nebenkosten" value="{{ item.rendite_info.nebenkosten|int }}">
+                        <input type="hidden" name="verwaltung" value="{{ item.rendite_info.verwaltung|int }}">
+                        <input type="hidden" name="ruecklage" value="{{ item.rendite_info.ruecklage|int }}">
+                        {% endif %}
+                        <button type="submit" style="padding: 8px 16px; font-size: 13px; background: #2563eb; width: 100%;">Laden</button>
+                    </form>
+                    <button type="button" onclick="toggleDetails('details-{{ loop.index }}', event)" style="padding: 8px 16px; font-size: 13px; background: #6b7280;">Details</button>
                 </div>
                 <div id="details-{{ loop.index }}" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
                     <div style="border-bottom: 1px solid #eee; padding: 4px 0; font-weight: 500;">Kauf:</div>
