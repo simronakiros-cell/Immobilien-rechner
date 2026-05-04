@@ -50,21 +50,26 @@ def calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgungssatz, restschuld):
         }
     
     r = (zinssatz / 100) / 12  # monatlicher Zinssatz
-    t = (tilgungssatz / 100) / 12  # monatliche Tilgung
     n = laufzeit * 12  # Monate
     
-    # Deutsche Berechnung: Rate = Kredit * (Zins + Tilgung) / Monat
-    monatliche_rate = kreditbetrag * (r + t)
-    
-    # Restschuld nach Ablauf der Zinsbindung berechnen
+    # Annuitätenformel: Rate basierend auf Laufzeit
     if r > 0:
         factor = math.pow(1 + r, n)
-        # Restschuld = Kredit * (1+r)^n - Rate * [(1+r)^n - 1] / r
+        monatliche_rate = kreditbetrag * r * factor / (factor - 1)
+        # Restschuld berechnen
         restschuld_berechnet = kreditbetrag * factor - monatliche_rate * (factor - 1) / r
         restschuld_berechnet = max(0, restschuld_berechnet)
     else:
-        restschuld_berechnet = kreditbetrag - (monatliche_rate * n)
-        restschuld_berechnet = max(0, restschuld_berechnet)
+        monatliche_rate = kreditbetrag / n
+        restschuld_berechnet = 0
+    
+    # Effektive Tilgungsrate berechnen (abgeleitet von der Rate)
+    if kreditbetrag > 0 and r > 0:
+        zins_erster_monat = kreditbetrag * r
+        tilgung_monatlich = monatliche_rate - zins_erster_monat
+        tilgungssatz_effektiv = (tilgung_monatlich * 12 / kreditbetrag) * 100
+    else:
+        tilgungssatz_effektiv = tilgungssatz
     
     # Gesamtergebnis
     gesamtzahlung = monatliche_rate * n
@@ -75,7 +80,7 @@ def calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgungssatz, restschuld):
         "kreditbetrag": kreditbetrag,
         "zinssatz": zinssatz,
         "laufzeit": laufzeit,
-        "tilgungssatz": round(tilgungssatz, 2),
+        "tilgungssatz": round(tilgungssatz_effektiv, 2),
         "restschuld": round(restschuld_berechnet, 2),
         "monatliche_rate": monatliche_rate,
         "gesamt_zinsen": gesamt_zinsen,
