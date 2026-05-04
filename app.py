@@ -40,54 +40,198 @@ NOTAR_GRUNDBUCH_SATZ = 0.02
 
 
 def calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgungssatz, restschuld):
-    if laufzeit <= 0:
+    if laufzeit <=0:
         return None
     if kreditbetrag <= 0:
         return {
-            "kreditbetrag": 0,
-            "zinssatz": zinssatz,
-            "laufzeit": laufzeit,
-            "tilgungssatz": 0,
-            "restschuld": 0,
-            "monatliche_rate": 0,
-            "gesamt_zinsen": 0,
-            "tilgung_prinzipal": 0,
-            "gesamtzahlung": 0
+            "kreditbetrag": 0, "zinssatz": zinssatz, "laufzeit": laufzeit,
+            "tilgungssatz": 0, "restschuld": 0, "monatliche_rate": 0,
+            "gesamt_zinsen": 0, "tilgung_prinzipal": 0, "gesamtzahlung": 0
         }
     
-    monatlicher_zins = (zinssatz / 100) / 12 if zinssatz > 0 else 0
-    monate = laufzeit * 12
+    r = (zinssatz / 100) / 12  # monatlicher Zinssatz
+    t = (tilgungssatz / 100) / 12  # monatliche Tilgung
+    n = laufzeit * 12  # Monate
     
-    if monatlicher_zins > 0:
-        # Annuitätenberechnung mit Berücksichtigung der Restschuld
-        # Formel: Rate = (Kredit * Zinsfaktor^Monate - Restschuld * Zinsfaktor) / (Zinsfaktor^Monate - 1)
-        zinsfaktor = 1 + monatlicher_zins
-        monatliche_rate = (kreditbetrag * monatlicher_zins * math.pow(zinsfaktor, monate) - restschuld * monatlicher_zins) / (math.pow(zinsfaktor, monate) - 1)
-        # Tatsächliche Restschuld nach Ablauf der Laufzeit berechnen
-        restschuld_tatsaechlich = kreditbetrag * math.pow(zinsfaktor, monate) - monatliche_rate * (math.pow(zinsfaktor, monate) - 1) / monatlicher_zins
-        restschuld_tatsaechlich = max(0, restschuld_tatsaechlich)
+    # Deutsche Berechnung: Rate = Kredit * (Zins + Tilgung) / Monat
+    monatliche_rate = kreditbetrag * (r + t)
+    
+    # Restschuld nach Ablauf der Zinsbindung berechnen
+    if r > 0:
+        factor = math.pow(1 + r, n)
+        # Restschuld = Kredit * (1+r)^n - Rate * [(1+r)^n - 1] / r
+        restschuld_berechnet = kreditbetrag * factor - monatliche_rate * (factor - 1) / r
+        restschuld_berechnet = max(0, restschuld_berechnet)
     else:
-        monatliche_rate = (kreditbetrag - restschuld) / monate
-        restschuld_tatsaechlich = restschuld
+        restschuld_berechnet = kreditbetrag - (monatliche_rate * n)
+        restschuld_berechnet = max(0, restschuld_berechnet)
     
-    gesamt_zinsen = (monatliche_rate * monate) - (kreditbetrag - restschuld_tatsaechlich)
-    tilgung_prinzipal = kreditbetrag - restschuld_tatsaechlich
-    gesamtzahlung = monatliche_rate * monate
-    
-    # Berechne monatliche Tilgung für Info (Zinsanteil von der Rate abziehen)
-    if kreditbetrag > 0:
-        zins_erster_monat = kreditbetrag * monatlicher_zins
-        tilgung_monatlich_init = monatliche_rate - zins_erster_monat
-        tilgung_prozent_init = (tilgung_monatlich_init * 12 / kreditbetrag) * 100
-    else:
-        tilgung_prozent_init = tilgungssatz
+    # Gesamtergebnis
+    gesamtzahlung = monatliche_rate * n
+    tilgung_prinzipal = kreditbetrag - restschuld_berechnet
+    gesamt_zinsen = gesamtzahlung - tilgung_prinzipal
     
     return {
         "kreditbetrag": kreditbetrag,
         "zinssatz": zinssatz,
         "laufzeit": laufzeit,
         "tilgungssatz": round(tilgungssatz, 2),
-        "tilgung_effektiv": round(tilgung_prozent_init, 2),
+        "restschuld": round(restschuld_berechnet, 2),
+        "monatliche_rate": monatliche_rate,
+        "gesamt_zinsen": gesamt_zinsen,
+        "tilgung_prinzipal": tilgung_prinzipal,
+        "gesamtzahlung": gesamtzahlung
+    }
+    
+    r = (zinssatz / 100) / 12  # monatlicher Zinssatz
+    n = laufzeit * 12  # Monate
+    
+    if r > 0:
+        # Annuity formula: PMT = PV * r * (1+r)^n / ((1+r)^n - 1)
+        factor = math.pow(1 + r, n)
+        monatliche_rate = kreditbetrag * r * factor / (factor - 1)
+        
+        # Restschuld nach n Monaten berechnen
+        restschuld_berechnet = kreditbetrag * factor - monatliche_rate * (factor - 1) / r
+        restschuld_berechnet = max(0, restschuld_berechnet)
+        
+        # Effektive Tilgungsrate (erster Monat)
+        zins_erster_monat = kreditbetrag * r
+        tilgung_monatlich = monatliche_rate - zins_erster_monat
+        tilgungssatz_effektiv = (tilgung_monatlich * 12 / kreditbetrag) * 100
+    else:
+        monatliche_rate = kreditbetrag / n
+        restschuld_berechnet = 0
+        tilgungssatz_effektiv = tilgungssatz
+    
+    # Gesamtergebnis
+    gesamtzahlung = monatliche_rate * n
+    tilgung_prinzipal = kreditbetrag - restschuld_berechnet
+    gesamt_zinsen = gesamtzahlung - tilgung_prinzipal
+    
+    return {
+        "kreditbetrag": kreditbetrag,
+        "zinssatz": zinssatz,
+        "laufzeit": laufzeit,
+        "tilgungssatz": round(tilgungssatz_effektiv, 2),
+        "restschuld": round(restschuld_berechnet, 2),
+        "monatliche_rate": monatliche_rate,
+        "gesamt_zinsen": gesamt_zinsen,
+        "tilgung_prinzipal": tilgung_prinzipal,
+        "gesamtzahlung": gesamtzahlung
+    }
+    
+    monatlicher_zins = (zinssatz / 100) / 12 if zinssatz > 0 else 0
+    monate = laufzeit * 12
+    
+    # Annuitätenformel: Rate basierend auf Laufzeit
+    if monatlicher_zins > 0:
+        zinsfaktor = 1 + monatlicher_zins
+        zinsfaktor_hoch_n = math.pow(zinsfaktor, monate)
+        # Formel: Rate = Kredit * [r(1+r)^n] / [(1+r)^n - 1]
+        monatliche_rate = kreditbetrag * (monatlicher_zins * zinsfaktor_hoch_n) / (zinsfaktor_hoch_n - 1)
+        # Restschuld berechnen
+        restschuld_tatsaechlich = kreditbetrag * zinsfaktor_hoch_n - monatliche_rate * (zinsfaktor_hoch_n - 1) / monatlicher_zins
+        restschuld_tatsaechlich = max(0, restschuld_tatsaechlich)
+    else:
+        monatliche_rate = kreditbetrag / monate
+        restschuld_tatsaechlich = 0
+    
+    # Effektive Tilgungsrate berechnen (abgeleitet von der Rate)
+    if kreditbetrag > 0 and monatlicher_zins > 0:
+        zins_erster_monat = kreditbetrag * monatlicher_zins
+        tilgung_monatlich = monatliche_rate - zins_erster_monat
+        tilgungssatz_effektiv = (tilgung_monatlich * 12 / kreditbetrag) * 100
+    else:
+        tilgungssatz_effektiv = tilgungssatz
+    
+    # Gesamtzahlungen und Zinsen
+    gesamtzahlung = monatliche_rate * monate
+    tilgung_prinzipal = kreditbetrag - restschuld_tatsaechlich
+    gesamt_zinsen = gesamtzahlung - tilgung_prinzipal
+    
+    return {
+        "kreditbetrag": kreditbetrag,
+        "zinssatz": zinssatz,
+        "laufzeit": laufzeit,
+        "tilgungssatz": round(tilgungssatz_effektiv, 2),
+        "restschuld": round(restschuld_tatsaechlich, 2),
+        "monatliche_rate": monatliche_rate,
+        "gesamt_zinsen": gesamt_zinsen,
+        "tilgung_prinzipal": tilgung_prinzipal,
+        "gesamtzahlung": gesamtzahlung
+    }
+    
+    monatlicher_zins = (zinssatz / 100) / 12 if zinssatz > 0 else 0
+    monate = laufzeit * 12
+    
+    # Korrekte Annuitätenformel mit Restschuld:
+    # Rate = (Kredit * r * (1+r)^n - Restschuld * r) / ((1+r)^n - 1)
+    # wobei r = monatlicher_zins, n = monate
+    if monatlicher_zins > 0:
+        zinsfaktor = 1 + monatlicher_zins
+        zinsfaktor_hoch_n = math.pow(zinsfaktor, monate)
+        # Formel: Rate = (K * r * (1+r)^n - Restschuld * r) / ((1+r)^n - 1)
+        monatliche_rate = (kreditbetrag * monatlicher_zins * zinsfaktor_hoch_n - restschuld * monatlicher_zins) / (zinsfaktor_hoch_n - 1)
+        # Tatsächliche Restschuld berechnen (Soll = Ist)
+        restschuld_tatsaechlich = kreditbetrag * zinsfaktor_hoch_n - monatliche_rate * (zinsfaktor_hoch_n - 1) / monatlicher_zins
+        restschuld_tatsaechlich = max(0, restschuld_tatsaechlich)
+    else:
+        monatliche_rate = (kreditbetrag - restschuld) / monate
+        restschuld_tatsaechlich = restschuld
+    
+    # Effektive Tilgungsrate berechnen (abgeleitet von der Rate)
+    if kreditbetrag > 0 and monatlicher_zins > 0:
+        zins_erster_monat = kreditbetrag * monatlicher_zins
+        tilgung_monatlich = monatliche_rate - zins_erster_monat
+        tilgungssatz_effektiv = (tilgung_monatlich * 12 / kreditbetrag) * 100
+    else:
+        tilgungssatz_effektiv = tilgungssatz
+    
+    # Gesamtzahlungen und Zinsen
+    gesamtzahlung = monatliche_rate * monate
+    tilgung_prinzipal = kreditbetrag - restschuld_tatsaechlich
+    gesamt_zinsen = gesamtzahlung - tilgung_prinzipal
+    
+    return {
+        "kreditbetrag": kreditbetrag,
+        "zinssatz": zinssatz,
+        "laufzeit": laufzeit,
+        "tilgungssatz": round(tilgungssatz_effektiv, 2),
+        "restschuld": round(restschuld_tatsaechlich, 2),
+        "monatliche_rate": monatliche_rate,
+        "gesamt_zinsen": gesamt_zinsen,
+        "tilgung_prinzipal": tilgung_prinzipal,
+        "gesamtzahlung": gesamtzahlung
+    }
+    
+    monatlicher_zins = (zinssatz / 100) / 12 if zinssatz > 0 else 0
+    monatliche_tilgung = (tilgungssatz / 100) / 12
+    monate = laufzeit * 12
+    
+    # Deutsche Berechnung: Rate = Kredit * (Zins + Tilgung) pro Monat
+    monatliche_rate = kreditbetrag * (monatlicher_zins + monatliche_tilgung)
+    
+    # Restschuld nach Laufzeit mit Zinseszins berechnen
+    if monatlicher_zins > 0:
+        zinsfaktor = 1 + monatlicher_zins
+        # Restschuld = Kredit * (1+r)^n - Rate * [(1+r)^n - 1] / r
+        restschuld_tatsaechlich = kreditbetrag * math.pow(zinsfaktor, monate) - monatliche_rate * (math.pow(zinsfaktor, monate) - 1) / monatlicher_zins
+        restschuld_tatsaechlich = max(0, restschuld_tatsaechlich)
+    else:
+        restschuld_tatsaechlich = kreditbetrag - (monatliche_rate * monate)
+        restschuld_tatsaechlich = max(0, restschuld_tatsaechlich)
+    
+    # Gesamtzahlungen und Zinsen
+    gesamtzahlung = monatliche_rate * monate
+    tilgung_prinzipal = kreditbetrag - restschuld_tatsaechlich
+    gesamt_zinsen = gesamtzahlung - tilgung_prinzipal
+    
+    return {
+        "kreditbetrag": kreditbetrag,
+        "zinssatz": zinssatz,
+        "laufzeit": laufzeit,
+        "tilgungssatz": round(tilgungssatz, 2),
         "restschuld": round(restschuld_tatsaechlich, 2),
         "monatliche_rate": monatliche_rate,
         "gesamt_zinsen": gesamt_zinsen,

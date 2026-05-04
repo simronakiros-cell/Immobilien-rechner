@@ -34,9 +34,9 @@ class TestCalculateLoan(unittest.TestCase):
         self.assertGreater(result["monatliche_rate"], 0)
     
     def test_monthly_rate_calculation(self):
-        # 100.000 €, 3,5%, 10 Jahre, keine Restschuld
+        # 100.000 €, 3,5% Zins, 2% Tilgung: Rate = 100000 * (0,035/12 + 0,02/12)
         result = calculate_loan(100000, 3.5, 10, 2.0, 0)
-        expected_rate = 100000 * ((0.035/12) * math.pow(1 + 0.035/12, 120)) / (math.pow(1 + 0.035/12, 120) - 1)
+        expected_rate = 100000 * ((3.5/100)/12 + (2.0/100)/12)
         self.assertAlmostEqual(result["monatliche_rate"], expected_rate, places=2)
     
     def test_total_interest(self):
