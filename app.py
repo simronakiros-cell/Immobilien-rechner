@@ -74,18 +74,20 @@ def calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgungssatz, restschuld):
     tilgung_prinzipal = kreditbetrag - restschuld_tatsaechlich
     gesamtzahlung = monatliche_rate * monate
     
-    # Effektive anfängliche Tilgungsrate berechnen
-    if kreditbetrag > 0 and monatlicher_zins >= 0:
-        tilgung_monatlich = monatliche_rate - (kreditbetrag * monatlicher_zins)
-        tilgung_initial_prozent = (tilgung_monatlich * 12 / kreditbetrag) * 100 if kreditbetrag > 0 else 0
+    # Berechne monatliche Tilgung für Info (Zinsanteil von der Rate abziehen)
+    if kreditbetrag > 0:
+        zins_erster_monat = kreditbetrag * monatlicher_zins
+        tilgung_monatlich_init = monatliche_rate - zins_erster_monat
+        tilgung_prozent_init = (tilgung_monatlich_init * 12 / kreditbetrag) * 100
     else:
-        tilgung_initial_prozent = 0
+        tilgung_prozent_init = tilgungssatz
     
     return {
         "kreditbetrag": kreditbetrag,
         "zinssatz": zinssatz,
         "laufzeit": laufzeit,
-        "tilgungssatz": round(tilgung_initial_prozent, 2),
+        "tilgungssatz": round(tilgungssatz, 2),
+        "tilgung_effektiv": round(tilgung_prozent_init, 2),
         "restschuld": round(restschuld_tatsaechlich, 2),
         "monatliche_rate": monatliche_rate,
         "gesamt_zinsen": gesamt_zinsen,
