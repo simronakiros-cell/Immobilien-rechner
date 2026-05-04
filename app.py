@@ -12,8 +12,11 @@ app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 @app.template_filter('german_number')
 def german_number(value, decimals=0):
     if value is None:
+        value = 0
+    try:
+        return f"{float(value):,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except (ValueError, TypeError):
         return "0"
-    return f"{float(value):,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 GRUNDERWERBSTEUER = {
     "Baden-Württemberg": 5.0,
@@ -37,30 +40,57 @@ NOTAR_GRUNDBUCH_SATZ = 0.02
 
 
 def calculate_loan(kreditbetrag, zinssatz, laufzeit, tilgungssatz, restschuld):
-    if kreditbetrag <= 0 or zinssatz <= 0 or laufzeit <= 0:
+    if laufzeit <= 0:
         return None
+    if kreditbetrag <= 0:
+        return {
+            "kreditbetrag": 0,
+            "zinssatz": zinssatz,
+            "laufzeit": laufzeit,
+            "tilgungssatz": 0,
+            "restschuld": 0,
+            "monatliche_rate": 0,
+            "gesamt_zinsen": 0,
+            "tilgung_prinzipal": 0,
+            "gesamtzahlung": 0
+        }
     
-    monatlicher_zins = (zinssatz / 100) / 12
+    monatlicher_zins = (zinssatz / 100) / 12 if zinssatz > 0 else 0
     monate = laufzeit * 12
     
     if monatlicher_zins > 0:
-        monatliche_rate = kreditbetrag * (monatlicher_zins * math.pow(1 + monatlicher_zins, monate)) / (math.pow(1 + monatlicher_zins, monate) - 1)
+        # Annuitätenberechnung mit Berücksichtigung der Restschuld
+        # Formel: Rate = (Kredit * Zinsfaktor^Monate - Restschuld * Zinsfaktor) / (Zinsfaktor^Monate - 1)
+        zinsfaktor = 1 + monatlicher_zins
+        monatliche_rate = (kreditbetrag * monatlicher_zins * math.pow(zinsfaktor, monate) - restschuld * monatlicher_zins) / (math.pow(zinsfaktor, monate) - 1)
+        # Tatsächliche Restschuld nach Ablauf der Laufzeit berechnen
+        restschuld_tatsaechlich = kreditbetrag * math.pow(zinsfaktor, monate) - monatliche_rate * (math.pow(zinsfaktor, monate) - 1) / monatlicher_zins
+        restschuld_tatsaechlich = max(0, restschuld_tatsaechlich)
     else:
-        monatliche_rate = kreditbetrag / monate
+        monatliche_rate = (kreditbetrag - restschuld) / monate
+        restschuld_tatsaechlich = restschuld
     
-    gesamt_zinsen = (monatliche_rate * monate) - kreditbetrag
-    gesamttilgung = kreditbetrag - restschuld
+    gesamt_zinsen = (monatliche_rate * monate) - (kreditbetrag - restschuld_tatsaechlich)
+    tilgung_prinzipal = kreditbetrag - restschuld_tatsaechlich
+    gesamtzahlung = monatliche_rate * monate
+    
+    # Effektive anfängliche Tilgungsrate berechnen
+    if kreditbetrag > 0 and monatlicher_zins >= 0:
+        tilgung_monatlich = monatliche_rate - (kreditbetrag * monatlicher_zins)
+        tilgung_initial_prozent = (tilgung_monatlich * 12 / kreditbetrag) * 100 if kreditbetrag > 0 else 0
+    else:
+        tilgung_initial_prozent = 0
     
     return {
         "kreditbetrag": kreditbetrag,
         "zinssatz": zinssatz,
         "laufzeit": laufzeit,
-        "tilgungssatz": tilgungssatz,
-        "restschuld": restschuld,
+        "tilgungssatz": round(tilgung_initial_prozent, 2),
+        "restschuld": round(restschuld_tatsaechlich, 2),
         "monatliche_rate": monatliche_rate,
         "gesamt_zinsen": gesamt_zinsen,
-        "gesamttilgung": gesamttilgung,
-        "kosten_gesamt": monatliche_rate * monate
+        "tilgung_prinzipal": tilgung_prinzipal,
+        "gesamtzahlung": gesamtzahlung
     }
 
 
@@ -75,7 +105,26 @@ def index():
             def parse_number(val):
                 if not val:
                     return 0
-                val = str(val).replace(',', '.')
+                val = str(val).strip()
+                if not val:
+                    return 0
+                # Deutsches Format: 1.000,00 oder 1000,00
+                if ',' in val:
+                    if '.' in val:
+                        # Format: 1.000,00 (deutsche Tausender mit Komma-Decimal)
+                        val = val.replace('.', '').replace(',', '.')
+                    else:
+                        # Format: 1000,00 (Komma-Decimal ohne Tausender)
+                        val = val.replace(',', '.')
+                elif '.' in val:
+                    # Prüfen ob englisches Format (1000.00) oder deutsche Tausender (1.000)
+                    parts = val.split('.')
+                    if len(parts[-1]) <= 2:
+                        # Englisches Format: 1000.00 oder 1000.0
+                        pass  # val bleibt unverändert
+                    else:
+                        # Deutsche Tausender: 1.000
+                        val = val.replace('.', '')
                 return float(val)
             
             preis = parse_number(request.form.get("preis", 0))
@@ -101,8 +150,8 @@ def index():
                 verwaltung = parse_number(request.form.get("verwaltung", 0))
                 ruecklage = parse_number(request.form.get("ruecklage", 0))
                 
-                bruttorendite = (mieteinnahmen * 12 / preis * 100) if preis > 0 else 0
-                gesamt_nebenkosten = nebenkosten + verwaltung + ruecklage + (mieteinnahmen * 0.03)
+                bruttorendite = (mieteinnahmen * 12 / gesamtkosten * 100) if gesamtkosten > 0 else 0
+                gesamt_nebenkosten = nebenkosten + verwaltung + ruecklage
                 rendite_info = None
                 if preis > 0:
                     nettomiete = (mieteinnahmen * 12) - (gesamt_nebenkosten * 12)
