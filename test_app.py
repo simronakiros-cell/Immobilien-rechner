@@ -49,6 +49,17 @@ class TestCalculateLoan(unittest.TestCase):
         result = calculate_loan(100000, 3.5, 10, 2.0, 0)
         self.assertGreater(result["tilgungssatz"], 0)
         self.assertLess(result["tilgungssatz"], 10)
+    
+    def test_tilgungssatz_input_is_preserved(self):
+        # WICHTIG: Die eingegebene Tilgung darf nicht überschrieben werden
+        result = calculate_loan(100000, 3.5, 10, 2.0, 0)
+        self.assertEqual(result["tilgungssatz"], 2.0)
+        
+        result = calculate_loan(100000, 3.5, 10, 3.0, 0)
+        self.assertEqual(result["tilgungssatz"], 3.0)
+        
+        result = calculate_loan(100000, 3.5, 10, 1.5, 0)
+        self.assertEqual(result["tilgungssatz"], 1.5)
 
 
 class TestGermanNumberFilter(unittest.TestCase):
