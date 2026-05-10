@@ -343,10 +343,10 @@
                 <span>Sollzins</span>
                 <span>{{ result.loan_info.zinssatz|german_number(2) }} %</span>
             </div>
-            <div class="result-row">
-                <span>Tilgung</span>
-                <span>{{ result.loan_info.tilgungssatz|german_number(2) }} %</span>
-            </div>
+                <div class="result-row">
+                    <span>Tilgung</span>
+                    <span>{{ result.tilgung|german_number(2) }} %</span>
+                </div>
             <div class="result-row">
                 <span>Restschuld</span>
                 <span>{{ result.loan_info.restschuld|german_number(2) }} €</span>
@@ -442,7 +442,7 @@
                     <div style="display: flex; justify-content: space-between;"><span>Darlehen:</span><span>{{ item.kreditbetrag|german_number(0) }} €</span></div>
                     {% if item.loan_info %}
                     <div style="display: flex; justify-content: space-between;"><span>Zins:</span><span>{{ item.loan_info.zinssatz|german_number(2) }}%</span></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Tilgung:</span><span>{{ item.loan_info.tilgungssatz|german_number(2) }}%</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Tilgung:</span><span>{{ item.tilgung|german_number(2) }}%</span></div>
                     <div style="display: flex; justify-content: space-between;"><span>Laufzeit:</span><span>{{ item.loan_info.laufzeit }} Jahre</span></div>
                     <div style="display: flex; justify-content: space-between;"><span>Restschuld:</span><span>{{ item.loan_info.restschuld|german_number(0) }} €</span></div>
                     <div style="display: flex; justify-content: space-between; font-weight: bold;"><span>Rate/Monat:</span><span>{{ item.loan_info.monatliche_rate|german_number(0) }} €</span></div>
